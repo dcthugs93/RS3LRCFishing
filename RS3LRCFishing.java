@@ -19,37 +19,39 @@ import org.tribot.script.ScriptManifest;
 import org.tribot.script.interfaces.Painting;
 import org.tribot.api.Timing;
 import org.tribot.api.util.Restarter;
+import org.tribot.api.Timing;
+import org.tribot.api.types.generic.Condition;
 
 
 @ScriptManifest(authors = { "dcthugs93" }, category = "Fishing", name = "Catches Fish in LRC")
 public class RS3LRCFishing extends EnumScript<RS3LRCFishing.STATE> implements Painting
 {
 
-
-	private final Color color = new Color(0,0,0);
-	public static final EGWPosition Bank_Pos = new EGWPosition (3655, 5114, 0);
-	public static final EGWPosition Fishing_Pos = new EGWPosition (3643, 5079, 0);
-	public static final EGWPosition Fishing_Pos2 = new EGWPosition (3626, 5085, 0);
-	public static final EGWPosition Fal_Pos = new EGWPosition (2967, 3403, 0);
-	public static final EGWPosition Fal_Bank_Pos = new EGWPosition (2945, 3370, 0);
-	public static final EGWPosition DM_Pos = new EGWPosition (3016, 3447, 0);
-	public static final EGWPosition Rope_Pos = new EGWPosition (3015, 9831, 0);
-	public static final long[] banker = {509507916L, 3167445700L};
-	public static long staircase = 3791790582L;
-	public static long rope = 3955626228L;
-	public static final long[] fishingSpot = {2648051121L, 329245827L, 3554051133L}; 
-	public static final int[] foodToEat = {1137865, 1037736, 1037579, 2380661, 1111183, 1094282};
-	public static final int[] rawFish = {1041375, 1137424};
-	public static final int fishingBait = 1736402;
-	public static int mouseSpeed = General.random(65, 155);
-	private static final long startTime = System.currentTimeMillis();
-	public static final int[] loginScreen = {21234, 46069};
-	public static final int inventoryFull = 24078;
 	public static Font font = AddFont.createFont();
-	public static int healthPercentage = Math.round(Game.getHitpoints() *100/Game.getHitpointsMax());
-	public static final int eatAtPercentage = General.random(40, 70);
-	public static final int[] keepItems = {1137865, 1037736, 1037579, 2380661, 1111183, 1094282, 1736402};
-	private static String Status = "";
+	private final Color color = new Color(0,0,0);
+	private static EGWPosition PlayerPOS = EGW.getPosition();
+	public static final EGWPosition Bank_Pos = new EGWPosition (3655, 5114, 0),
+									Fishing_Pos = new EGWPosition (3643, 5079, 0),
+									Fishing_Pos2 = new EGWPosition (3626, 5085, 0),
+									Fal_Pos = new EGWPosition (2967, 3403, 0),
+									Fal_Bank_Pos = new EGWPosition (2945, 3370, 0),
+									DM_Pos = new EGWPosition (3016, 3447, 0),
+									Rope_Pos = new EGWPosition (3015, 9831, 0);
+	public static final long[] 		banker = {509507916L, 3167445700L},
+									fishingSpot = {2648051121L, 329245827L, 3554051133L}; 
+	public static final long 		staircase = 3791790582L,
+									rope = 3955626228L;	
+	public static final int[] 		foodToEat = {1137865, 1037736, 1037579, 2380661, 1111183, 1094282},
+									rawFish = {1041375, 1137424},
+									loginScreen = {21234, 46069},
+									keepItems = {1137865, 1037736, 1037579, 2380661, 1111183, 1094282, 1736402};
+	public static final int 		fishingBait = 1736402,
+									eatAtPercentage = General.random(40, 70),
+									inventoryFull = 24078;
+	public static int 				mouseSpeed = General.random(65, 155),
+									healthPercentage = Math.round(Game.getHitpoints() *100/Game.getHitpointsMax());
+	private static final long 		startTime = System.currentTimeMillis();
+	private static 					String Status = "";
 	
 	
 	enum STATE
@@ -74,7 +76,6 @@ public class RS3LRCFishing extends EnumScript<RS3LRCFishing.STATE> implements Pa
 		switch (t)
 		{
 			case CHECK:
-			EGWPosition PlayerPOS = EGW.getPosition();
 			ScreenModel[] fish = ScreenModels.findNearest(fishingSpot);  
 
 			try {
@@ -86,28 +87,35 @@ public class RS3LRCFishing extends EnumScript<RS3LRCFishing.STATE> implements Pa
            }
 			if(loggedOut()){ 	
 				Restarter.restartClient(); 
-				}else if(Backpack.find(foodToEat).length >= 1 && healthPercentage < eatAtPercentage){
+			}
+			if(Backpack.find(foodToEat).length >= 1 && healthPercentage < eatAtPercentage){
 					Status = "Eating Food";
 					return STATE.EAT;
-				}else if(Backpack.find(fishingBait).length <= 0) { General.println("Out of bait stopping script"); super.stopScript();
-				}else if(Backpack.find(foodToEat).length <= 0) { Status = "Out of Food, Going To Get More"; return STATE.TELEPORT;
-				}else if(inCombat()){Status = "Walking to Safe Spot"; return STATE.WALK_TO_SAFE_SPOT;
-				}else if(Backpack.find(foodToEat).length >= 1 && healthPercentage > eatAtPercentage && PlayerPOS.distance(Fishing_Pos) > 10 && !inventoryIsFull()){
-					Status = "Walking to Fishing Spot";
-					return STATE.WALK_TO_FISH;
+			}
+			if(Backpack.find(fishingBait).length <= 0) { General.println("Out of bait stopping script"); super.stopScript();
+			}
+			if(Backpack.find(foodToEat).length <= 0) { Status = "Out of Food, Going To Get More"; return STATE.TELEPORT;
+			}
+			if(inCombat()){Status = "Walking to Safe Spot"; return STATE.WALK_TO_SAFE_SPOT;
+			}
+			if(Backpack.find(foodToEat).length >= 1 && healthPercentage > eatAtPercentage && PlayerPOS.distance(Fishing_Pos) > 10 && !inventoryIsFull()){
+				Status = "Walking to Fishing Spot";
+				return STATE.WALK_TO_FISH;
+			}
+			if(PlayerPOS.distance(Fishing_Pos) < 10 && fish.length > 0 && !inventoryIsFull()) {
+				Status = "Catching Fish";
+				return STATE.CATCH_FISH;
+			}
+			if(inventoryIsFull()){
+				if(PlayerPOS.distance(Bank_Pos) < 6){
+					Status = "Depositing Raw Fish";
+					return STATE.BANK;
 				}
-				else if(PlayerPOS.distance(Fishing_Pos) < 10 && fish.length > 0 && !inventoryIsFull()) {
-					Status = "Catching Fish";
-					return STATE.CATCH_FISH;
-				}else if(inventoryIsFull()){
-					if(PlayerPOS.distance(Bank_Pos) < 6){
-						Status = "Depositing Raw Fish";
-						return STATE.BANK;
-					}else if(PlayerPOS.distance(Bank_Pos) > 15){
-						Status = "Walking To Bank";
-						return STATE.WALK_TO_BANK;
-					}
+				if(PlayerPOS.distance(Bank_Pos) > 15){
+					Status = "Walking To Bank";
+					return STATE.WALK_TO_BANK;
 				}
+			}
 					
 					
 
@@ -143,7 +151,7 @@ public class RS3LRCFishing extends EnumScript<RS3LRCFishing.STATE> implements Pa
 						LodestoneNetwork.teleport(LodestoneNetwork.LOCATIONS.FALADOR);
 						Timing.waitCondition(new Condition() {
 							public boolean active() {
-								return PlayerPOS3.distance(Fal_Pos) < 6;
+								return PlayerPOS.distance(Fal_Pos) < 6;
 							}
 						}, General.random(2000, 4000));
 						while(Player.getAnimation() > 0)
