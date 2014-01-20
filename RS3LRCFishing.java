@@ -77,37 +77,37 @@ public class RS3LRCFishing extends EnumScript<RS3LRCFishing.STATE> implements Pa
 			EGWPosition PlayerPOS = EGW.getPosition();
 			ScreenModel[] fish = ScreenModels.findNearest(fishingSpot);  
 
-			       try {
-                    if (font == null) {
-                        font = AddFont.createFont();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+			try {
+				if (font == null) {
+					font = AddFont.createFont();
                 }
-				if(loggedOut()){ 	
-					Restarter.restartClient(); 
+           } catch (Exception e) {
+				e.printStackTrace();
+           }
+			if(loggedOut()){ 	
+				Restarter.restartClient(); 
 				}else if(Backpack.find(foodToEat).length >= 1 && healthPercentage < eatAtPercentage){
-						Status = "Eating Food";
-						return STATE.EAT;
+					Status = "Eating Food";
+					return STATE.EAT;
 				}else if(Backpack.find(fishingBait).length <= 0) { General.println("Out of bait stopping script"); super.stopScript();
 				}else if(Backpack.find(foodToEat).length <= 0) { Status = "Out of Food, Going To Get More"; return STATE.TELEPORT;
 				}else if(inCombat()){Status = "Walking to Safe Spot"; return STATE.WALK_TO_SAFE_SPOT;
 				}else if(Backpack.find(foodToEat).length >= 1 && healthPercentage > eatAtPercentage && PlayerPOS.distance(Fishing_Pos) > 10 && !inventoryIsFull()){
-							Status = "Walking to Fishing Spot";
-							return STATE.WALK_TO_FISH;
-						}
-						else if(PlayerPOS.distance(Fishing_Pos) < 10 && fish.length > 0 && !inventoryIsFull()) {
-								Status = "Catching Fish";
-								return STATE.CATCH_FISH;
-			}else if(inventoryIsFull()){
-						if(PlayerPOS.distance(Bank_Pos) < 6){
-								Status = "Depositing Raw Fish";
-								return STATE.BANK;
+					Status = "Walking to Fishing Spot";
+					return STATE.WALK_TO_FISH;
+				}
+				else if(PlayerPOS.distance(Fishing_Pos) < 10 && fish.length > 0 && !inventoryIsFull()) {
+					Status = "Catching Fish";
+					return STATE.CATCH_FISH;
+				}else if(inventoryIsFull()){
+					if(PlayerPOS.distance(Bank_Pos) < 6){
+						Status = "Depositing Raw Fish";
+						return STATE.BANK;
 					}else if(PlayerPOS.distance(Bank_Pos) > 15){
-								Status = "Walking To Bank";
-									return STATE.WALK_TO_BANK;
-						}
-			}
+						Status = "Walking To Bank";
+						return STATE.WALK_TO_BANK;
+					}
+				}
 					
 					
 
@@ -140,10 +140,14 @@ public class RS3LRCFishing extends EnumScript<RS3LRCFishing.STATE> implements Pa
 			if(!LodestoneNetwork.isOpen()){
 				if(LodestoneNetwork.open()){
 					if(PlayerPOS3.distance(Fal_Pos) > 6){
-							LodestoneNetwork.teleport(LodestoneNetwork.LOCATIONS.FALADOR);
-							General.sleep(6000, 8000);
-							 while(Player.getAnimation() > 0)
-									General.sleep(1000, 2000);
+						LodestoneNetwork.teleport(LodestoneNetwork.LOCATIONS.FALADOR);
+						Timing.waitCondition(new Condition() {
+							public boolean active() {
+								return PlayerPOS3.distance(Fal_Pos) < 6;
+							}
+						}, General.random(2000, 4000));
+						while(Player.getAnimation() > 0)
+							General.sleep(1000, 2000);
 					}
 				}
 			}
@@ -164,7 +168,7 @@ public class RS3LRCFishing extends EnumScript<RS3LRCFishing.STATE> implements Pa
 			
 			case BANK_IN_FAL:
 			while(Backpack.find(foodToEat).length <= 0){
-					Methods.bankInFal();
+				Methods.bankInFal();
 			} 
 			return STATE.WALK_TO_DM;
 			
@@ -211,7 +215,7 @@ public class RS3LRCFishing extends EnumScript<RS3LRCFishing.STATE> implements Pa
 			case WALK_TO_SAFE_SPOT:
 			EGWPosition PlayerPOS1 = EGW.getPosition();
 				if(PlayerPOS1.distance(Fishing_Pos) < 10){
-						WalkingMethods.walkToFishSpot2();
+					WalkingMethods.walkToFishSpot2();
 				} else { WalkingMethods.walkToFishSpot1(); }
 				while(Player.isMoving())
 					General.sleep(1000, 2000);
